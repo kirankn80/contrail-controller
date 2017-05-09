@@ -130,6 +130,7 @@ static void BuildLinkToMetadata() {
     AddLinkToMetadata("virtual-machine-interface", "virtual-network");
     AddLinkToMetadata("virtual-machine-interface", "virtual-machine");
     AddLinkToMetadata("virtual-machine-interface", "security-group");
+    AddLinkToMetadata("virtual-machine-interface", "tag");
     AddLinkToMetadata("virtual-machine-interface",
                       "virtual-machine-interface-routing-instance",
                       "virtual-machine-interface-routing-instance");
@@ -2166,6 +2167,12 @@ void DelOperDBAcl(int id) {
     req.key.reset(key);
     req.data.reset(NULL);
     Agent::GetInstance()->acl_table()->Enqueue(&req);
+}
+
+void AddTag(const char *name, int id) {
+    char buff[128];
+    sprintf(buff, "<tag-id>%d</tag-id>", id);
+    AddNode("tag", name, id, buff);
 }
 
 void AddSg(const char *name, int id, int sg_id) {

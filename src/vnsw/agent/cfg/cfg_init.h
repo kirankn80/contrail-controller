@@ -28,6 +28,7 @@ public:
     IFMapAgentTable *cfg_vm_table() const {return cfg_vm_table_;}
     IFMapAgentTable *cfg_vn_table() const {return cfg_vn_table_;}
     IFMapAgentTable *cfg_sg_table() const {return cfg_sg_table_;}
+    IFMapAgentTable *cfg_tag_table() const {return cfg_tag_table_;}
     IFMapAgentTable *cfg_acl_table() const {return cfg_acl_table_;}
     IFMapAgentTable *cfg_vrf_table() const {return cfg_vrf_table_;}
     IFMapAgentTable *cfg_instanceip_table() const {
@@ -144,6 +145,7 @@ private:
     IFMapAgentTable *cfg_vm_table_;
     IFMapAgentTable *cfg_vn_table_;
     IFMapAgentTable *cfg_sg_table_;
+    IFMapAgentTable *cfg_tag_table_;
     IFMapAgentTable *cfg_acl_table_;
     IFMapAgentTable *cfg_vrf_table_;
     IFMapAgentTable *cfg_instanceip_table_;

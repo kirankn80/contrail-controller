@@ -517,6 +517,7 @@ TEST_F(SgTest, Flow_Allow_1) {
     client->WaitForIdle();
 }
 
+#if 0
 // Deny in both forward and reverse directions
 TEST_F(SgTest, Flow_Deny_1) {
     TxTcpPacket(vnet[1]->id(), vnet_addr[1], vnet_addr[2],
@@ -964,6 +965,7 @@ TEST_F(SgTest, Sg_Policy_2) {
             Ip4Address::from_string("10.10.10.0", ec), 24, NULL);
     client->WaitForIdle();
 }
+#endif
 
 int main(int argc, char *argv[]) {
     int ret = 0;

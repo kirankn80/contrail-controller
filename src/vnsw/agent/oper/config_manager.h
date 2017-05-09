@@ -84,6 +84,7 @@ public:
     void AddLogicalInterfaceNode(IFMapNode *node);
     void AddPhysicalInterfaceNode(IFMapNode *node);
     void AddSgNode(IFMapNode *node);
+    void AddTagNode(IFMapNode *node);
     void AddVnNode(IFMapNode *node);
     void AddVrfNode(IFMapNode *node);
     void AddVmNode(IFMapNode *node);
@@ -127,6 +128,7 @@ private:
     std::auto_ptr<ConfigManagerNodeList> logical_interface_list_;
     std::auto_ptr<ConfigManagerNodeList> device_list_;
     std::auto_ptr<ConfigManagerNodeList> sg_list_;
+    std::auto_ptr<ConfigManagerNodeList> tag_list_;
     std::auto_ptr<ConfigManagerNodeList> vn_list_;
     std::auto_ptr<ConfigManagerNodeList> vrf_list_;
     std::auto_ptr<ConfigManagerNodeList> vm_list_;

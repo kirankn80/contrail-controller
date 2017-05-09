@@ -10,6 +10,7 @@
 #include "oper/ifmap_dependency_manager.h"
 #include "oper/vn.h"
 #include "oper/sg.h"
+#include "oper/firewall.h"
 #include "oper/interface_common.h"
 #include "oper/health_check.h"
 #include "oper/vrf.h"
@@ -97,6 +98,7 @@ void IFMapDependencyManager::Initialize(Agent *agent) {
         "qos-queue",
         "routing-instance",
         "security-group",
+        "tag",
         "service-health-check",
         "service-instance",
         "service-template",
@@ -619,6 +621,8 @@ void IFMapDependencyManager::InitializeDependencyRules(Agent *agent) {
     RegisterConfigHandler(this, "security-group",
                          agent ? agent->sg_table() : NULL);
 
+    RegisterConfigHandler(this, "tag",
+                         agent ? agent->tag_table() : NULL);
     ////////////////////////////////////////////////////////////////////////
     // VMI <----> VN
     //     <----> VM
@@ -651,6 +655,9 @@ void IFMapDependencyManager::InitializeDependencyRules(Agent *agent) {
     AddDependencyPath("virtual-machine-interface",
                       MakePath("virtual-machine-interface-security-group",
                                "security-group", true));
+    AddDependencyPath("virtual-machine-interface",
+                      MakePath("virtual-machine-interface-tag",
+                               "tag", true));
     AddDependencyPath("virtual-machine-interface",
                       MakePath("alias-ip-virtual-machine-interface",
                                "alias-ip", true,

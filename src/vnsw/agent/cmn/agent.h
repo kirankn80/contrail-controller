@@ -74,6 +74,12 @@ typedef boost::intrusive_ptr<const SgEntry> SgEntryConstRef;
 void intrusive_ptr_release(const SgEntry* p);
 void intrusive_ptr_add_ref(const SgEntry* p);
 
+class TagEntry;
+typedef boost::intrusive_ptr<TagEntry> TagEntryRef;
+typedef boost::intrusive_ptr<const TagEntry> TagEntryConstRef;
+void intrusive_ptr_release(const TagEntry* p);
+void intrusive_ptr_add_ref(const TagEntry* p);
+
 class VrfEntry;
 typedef IntrusivePtrRef<VrfEntry> VrfEntryRef;
 typedef IntrusivePtrRef<const VrfEntry> VrfEntryConstRef;
@@ -177,6 +183,7 @@ class NextHopTable;
 class VmTable;
 class VnTable;
 class SgTable;
+class TagTable;
 class VrfTable;
 class MplsTable;
 class RouteTable;
@@ -407,6 +414,11 @@ public:
     SgTable *sg_table() const { return sg_table_;}
     void set_sg_table(SgTable *table) {
         sg_table_ = table;
+    }
+
+    TagTable *tag_table() const { return tag_table_;}
+    void set_tag_table(TagTable *table) {
+        tag_table_ = table;
     }
 
     MplsTable *mpls_table() const { return mpls_table_;}
@@ -1175,6 +1187,7 @@ private:
     VmTable *vm_table_;
     VnTable *vn_table_;
     SgTable *sg_table_;
+    TagTable *tag_table_;
     MplsTable *mpls_table_;
     AclTable *acl_table_;
     MirrorTable *mirror_table_;

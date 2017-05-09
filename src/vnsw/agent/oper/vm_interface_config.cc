@@ -11,6 +11,7 @@
 #include <oper/interface_common.h>
 #include <oper/mirror_table.h>
 #include <oper/sg.h>
+#include <oper/firewall.h>
 #include <oper/bgp_as_service.h>
 
 #include <port_ipc/port_ipc_handler.h>
@@ -639,6 +640,20 @@ static void BuildSgList(VmInterfaceConfigData *data, IFMapNode *node) {
     }
 }
 
+static void BuildTagList(VmInterfaceConfigData *data, IFMapNode *node) {
+    Tag *tag_cfg = static_cast<Tag *>(node->GetObject());
+    assert(tag_cfg);
+    autogen::IdPermsType id_perms = tag_cfg->id_perms();
+    uint32_t tag_id = TagTable::kInvalidTagId;
+    if (tag_id != TagTable::kInvalidTagId) {
+        uuid tag_uuid = nil_uuid();
+        CfgUuidSet(id_perms.uuid.uuid_mslong, id_perms.uuid.uuid_lslong,
+                   tag_uuid);
+        data->tag_list_.list_.insert
+            (VmInterface::TagGroupEntry(tag_uuid));
+    }
+}
+
 static bool BuildBridgeDomainVrfTable(Agent *agent, IFMapNode *vn_node) {
 
     ConfigManager *cfg_manager= agent->config_manager();
@@ -1201,6 +1216,10 @@ bool InterfaceTable::VmiProcessConfig(IFMapNode *node, DBRequest &req,
 
         if (adj_node->table() == agent_->cfg()->cfg_sg_table()) {
             BuildSgList(data, adj_node);
+        }
+
+        if (adj_node->table() == agent_->cfg()->cfg_tag_table()) {
+            BuildTagList(data, adj_node);
         }
 
         if (adj_node->table() == agent_->cfg()->cfg_vn_table()) {

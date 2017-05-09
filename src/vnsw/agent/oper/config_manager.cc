@@ -23,6 +23,7 @@
 #include <oper/vn.h>
 #include <oper/vrf.h>
 #include <oper/sg.h>
+#include <oper/firewall.h>
 #include <oper/vm.h>
 #include <oper/interface_common.h>
 #include <oper/global_qos_config.h>
@@ -267,6 +268,7 @@ void ConfigManager::Init() {
     device_list_.reset(new ConfigManagerNodeList
                        (agent_->physical_device_table()));
     sg_list_.reset(new ConfigManagerNodeList(agent_->sg_table()));
+    tag_list_.reset(new ConfigManagerNodeList(agent_->tag_table()));
     vn_list_.reset(new ConfigManagerNodeList(agent_->vn_table()));
     vrf_list_.reset(new ConfigManagerNodeList(agent_->vrf_table()));
     vm_list_.reset(new ConfigManagerNodeList(agent_->vm_table()));
@@ -305,6 +307,7 @@ uint32_t ConfigManager::Size() const {
         logical_interface_list_->Size() +
         device_list_->Size() +
         sg_list_->Size() +
+        tag_list_->Size() +
         vn_list_->Size() +
         vrf_list_->Size() +
         vm_list_->Size() +
@@ -326,6 +329,7 @@ uint32_t ConfigManager::ProcessCount() const {
         logical_interface_list_->process_count() +
         device_list_->process_count() +
         sg_list_->process_count() +
+        tag_list_->process_count() +
         vn_list_->process_count() +
         vrf_list_->process_count() +
         vm_list_->process_count() +
@@ -383,6 +387,7 @@ int ConfigManager::Run() {
     count += network_ipam_list_->Process(max_count - count);
     count += virtual_dns_list_->Process(max_count - count);
     count += sg_list_->Process(max_count - count);
+    count += tag_list_->Process(max_count - count);
     count += physical_interface_list_->Process(max_count - count);
     count += qos_queue_list_->Process(max_count - count);
     count += forwarding_class_list_->Process(max_count - count);
@@ -429,6 +434,10 @@ void ConfigManager::AddBridgeDomainNode(IFMapNode *node) {
 
 void ConfigManager::AddSgNode(IFMapNode *node) {
     sg_list_->Add(agent_, this, node);
+}
+
+void ConfigManager::AddTagNode(IFMapNode *node) {
+    tag_list_->Add(agent_, this, node);
 }
 
 void ConfigManager::AddVnNode(IFMapNode *node) {

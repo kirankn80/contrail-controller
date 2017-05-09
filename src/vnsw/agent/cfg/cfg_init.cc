@@ -105,6 +105,10 @@ void AgentConfig::RegisterDBClients(DB *db) {
         (IFMapTable::FindTable(agent_->db(), "security-group")));
     assert(cfg_sg_table_);         
 
+    cfg_tag_table_ = (static_cast<IFMapAgentTable *>
+        (IFMapTable::FindTable(agent_->db(), "tag")));
+    assert(cfg_tag_table_);
+
     cfg_vrf_table_ = (static_cast<IFMapAgentTable *>
         (IFMapTable::FindTable(agent_->db(), "routing-instance")));
     assert(cfg_vrf_table_);

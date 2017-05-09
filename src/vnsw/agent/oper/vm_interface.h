@@ -415,6 +415,38 @@ public:
         SecurityGroupEntrySet list_;
     };
 
+    struct TagGroupEntry : ListEntry {
+        TagGroupEntry();
+        TagGroupEntry(const TagGroupEntry &rhs);
+        TagGroupEntry(const boost::uuids::uuid &uuid);
+        virtual ~TagGroupEntry();
+
+        bool operator == (const TagGroupEntry &rhs) const;
+        bool operator() (const TagGroupEntry &lhs,
+                         const TagGroupEntry &rhs) const;
+        bool IsLess(const TagGroupEntry *rhs) const;
+        void Activate(VmInterface *interface) const;
+        void DeActivate(VmInterface *interface) const;
+
+        mutable TagEntryRef tag_;
+        boost::uuids::uuid uuid_;
+    };
+    typedef std::set<TagGroupEntry, TagGroupEntry>
+        TagGroupEntrySet;
+    typedef std::vector<boost::uuids::uuid> TagGroupUuidList;
+
+    struct TagGroupEntryList {
+        TagGroupEntryList() : list_() { }
+        ~TagGroupEntryList() { }
+
+        void Insert(const TagGroupEntry *rhs);
+        void Update(const TagGroupEntry *lhs,
+                    const TagGroupEntry *rhs);
+        void Remove(TagGroupEntrySet::iterator &it);
+
+        TagGroupEntrySet list_;
+    };
+
     struct VrfAssignRule : ListEntry {
         VrfAssignRule();
         VrfAssignRule(const VrfAssignRule &rhs);
@@ -754,6 +786,11 @@ public:
     }
     void CopySgIdList(SecurityGroupList *sg_id_list) const;
 
+    const TagGroupEntryList &tag_list() const {
+        return tag_list_;
+    }
+    //void CopyTagIdList(TagGroupList *tag_id_list) const;
+
     const VrfAssignRuleList &vrf_assign_rule_list() const {
         return vrf_assign_rule_list_;
     }
@@ -1090,6 +1127,7 @@ private:
 
     // Lists
     SecurityGroupEntryList sg_list_;
+    TagGroupEntryList tag_list_;
     FloatingIpList floating_ip_list_;
     AliasIpList alias_ip_list_;
     ServiceVlanList service_vlan_list_;
@@ -1269,6 +1307,7 @@ struct VmInterfaceConfigData : public VmInterfaceData {
     OperDhcpOptions oper_dhcp_options_;
     Interface::MirrorDirection mirror_direction_;
     VmInterface::SecurityGroupEntryList sg_list_;
+    VmInterface::TagGroupEntryList tag_list_;
     VmInterface::FloatingIpList floating_ip_list_;
     VmInterface::AliasIpList alias_ip_list_;
     VmInterface::ServiceVlanList service_vlan_list_;

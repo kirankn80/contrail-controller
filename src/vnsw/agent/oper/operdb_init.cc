@@ -23,6 +23,7 @@
 #include <oper/vm.h>
 #include <oper/vn.h>
 #include <oper/sg.h>
+#include <oper/firewall.h>
 #include <oper/mirror_table.h>
 #include <oper/vrf_assign.h>
 #include <oper/vxlan.h>
@@ -79,6 +80,7 @@ void OperDB::CreateDBTables(DB *db) {
     DB::RegisterFactory("db.vn.0", &VnTable::CreateTable);
     DB::RegisterFactory("db.vm.0", &VmTable::CreateTable);
     DB::RegisterFactory("db.sg.0", &SgTable::CreateTable);
+    DB::RegisterFactory("db.tag.0", &TagTable::CreateTable);
     DB::RegisterFactory("db.mpls.0", &MplsTable::CreateTable);
     DB::RegisterFactory("db.acl.0", &AclTable::CreateTable);
     DB::RegisterFactory("db.mirror_table.0", &MirrorTable::CreateTable);
@@ -144,6 +146,12 @@ void OperDB::CreateDBTables(DB *db) {
     assert(sg_table);
     agent_->set_sg_table(sg_table);
     sg_table->set_agent(agent_);
+
+    TagTable *tag_table;
+    tag_table = static_cast<TagTable *>(db->CreateTable("db.tag.0"));
+    assert(tag_table);
+    agent_->set_tag_table(tag_table);
+    tag_table->set_agent(agent_);
 
     VnTable *vn_table;
     vn_table = static_cast<VnTable *>(db->CreateTable("db.vn.0"));

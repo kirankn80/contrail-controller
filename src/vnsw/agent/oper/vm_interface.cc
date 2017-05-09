@@ -22,6 +22,7 @@
 #include <oper/qos_config.h>
 #include <oper/bridge_domain.h>
 #include <oper/sg.h>
+#include <oper/firewall.h>
 
 #include <filter/acl.h>
 #include <port_ipc/port_ipc_handler.h>
@@ -48,8 +49,8 @@ VmInterface::VmInterface(const boost::uuids::uuid &uuid) :
     layer3_forwarding_(true), flood_unknown_unicast_(false),
     mac_set_(false), ecmp_(false), ecmp6_(false), disable_policy_(false),
     tx_vlan_id_(kInvalidVlanId), rx_vlan_id_(kInvalidVlanId), parent_(NULL, this),
-    local_preference_(VmInterface::INVALID), oper_dhcp_options_(),
-    sg_list_(), floating_ip_list_(), alias_ip_list_(), service_vlan_list_(),
+    local_preference_(VmInterface::INVALID), oper_dhcp_options_(), sg_list_(),
+    tag_list_(), floating_ip_list_(), alias_ip_list_(), service_vlan_list_(),
     static_route_list_(), allowed_address_pair_list_(), fat_flow_list_(),
     vrf_assign_rule_list_(), vrf_assign_acl_(NULL), vm_ip_service_addr_(0),
     device_type_(VmInterface::DEVICE_TYPE_INVALID),
@@ -89,8 +90,8 @@ VmInterface::VmInterface(const boost::uuids::uuid &uuid,
     flood_unknown_unicast_(false), mac_set_(false),
     ecmp_(false), ecmp6_(false), disable_policy_(false),
     tx_vlan_id_(tx_vlan_id), rx_vlan_id_(rx_vlan_id), parent_(parent, this),
-    local_preference_(VmInterface::INVALID), oper_dhcp_options_(),
-    sg_list_(), floating_ip_list_(), alias_ip_list_(), service_vlan_list_(),
+    local_preference_(VmInterface::INVALID), oper_dhcp_options_(), sg_list_(),
+    tag_list_(), floating_ip_list_(), alias_ip_list_(), service_vlan_list_(),
     static_route_list_(), allowed_address_pair_list_(), vrf_assign_rule_list_(),
     vrf_assign_acl_(NULL), device_type_(device_type),
     vmi_type_(vmi_type), configurer_(0), subnet_(0),
@@ -2262,6 +2263,68 @@ void VmInterface::DeleteSecurityGroup() {
             sg_list_.list_.erase(prev);
         }
     }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// TagGroup routines
+/////////////////////////////////////////////////////////////////////////////
+VmInterface::TagGroupEntry::TagGroupEntry() : 
+    ListEntry(), uuid_(nil_uuid()) {
+}
+
+VmInterface::TagGroupEntry::TagGroupEntry
+    (const TagGroupEntry &rhs) : 
+        ListEntry(rhs.installed_, rhs.del_pending_), uuid_(rhs.uuid_) {
+}
+
+VmInterface::TagGroupEntry::TagGroupEntry(const uuid &u) : 
+    ListEntry(), uuid_(u) {
+}
+
+VmInterface::TagGroupEntry::~TagGroupEntry() {
+}
+
+bool VmInterface::TagGroupEntry::operator ==
+    (const TagGroupEntry &rhs) const {
+    return uuid_ == rhs.uuid_;
+}
+
+bool VmInterface::TagGroupEntry::operator() 
+    (const TagGroupEntry &lhs, const TagGroupEntry &rhs) const {
+    return lhs.IsLess(&rhs);
+}
+
+bool VmInterface::TagGroupEntry::IsLess
+    (const TagGroupEntry *rhs) const {
+    return uuid_ < rhs->uuid_;
+}
+
+void VmInterface::TagGroupEntry::Activate(VmInterface *interface) const {
+    if (tag_.get() != NULL)
+        return; 
+
+    Agent *agent = static_cast<InterfaceTable *>
+        (interface->get_table())->agent();
+    TagKey tag_key(uuid_);
+    tag_ = static_cast<TagEntry *> 
+        (agent->tag_table()->FindActiveEntry(&tag_key));
+}
+
+void VmInterface::TagGroupEntry::DeActivate(VmInterface *interface) const {
+}
+
+void VmInterface::TagGroupEntryList::Insert
+    (const TagGroupEntry *rhs) {
+    list_.insert(*rhs);
+}
+
+void VmInterface::TagGroupEntryList::Update
+        (const TagGroupEntry *lhs, const TagGroupEntry *rhs) {
+}
+
+void VmInterface::TagGroupEntryList::Remove
+        (TagGroupEntrySet::iterator &it) {
+    it->set_del_pending(true);
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -362,6 +362,7 @@ void IFMapGraphWalker::AddNodesToWhitelist() {
                 ("instance-ip-virtual-machine-interface")
                 ("virtual-machine-interface-virtual-network")
                 ("virtual-machine-interface-security-group")
+                ("virtual-machine-interface-tag")
                 ("floating-ip-virtual-machine-interface")
                 ("alias-ip-virtual-machine-interface")
                 ("customer-attachment-virtual-machine-interface")
