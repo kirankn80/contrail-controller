@@ -683,6 +683,7 @@ void AgentXmppChannel::AddEcmpRoute(string vrf_name, IpAddress prefix_addr,
                     ClonedLocalPath *data =
                         new ClonedLocalPath(label, vn_list,
                                 item->entry.security_group_list.security_group,
+                                item->entry.tag_group_list.tag_group,
                                 sequence_number());
                     rt_table->AddClonedLocalPathReq(bgp_peer, vrf_name,
                                                     prefix_addr, prefix_len,
@@ -730,6 +731,7 @@ void AgentXmppChannel::AddEcmpRoute(string vrf_name, IpAddress prefix_addr,
         new ControllerEcmpRoute(bgp_peer_id(), prefix_addr, prefix_len,
                                 vn_list, -1, false, vrf_name,
                                 item->entry.security_group_list.security_group,
+                                item->entry.tag_group_list.tag_group,
                                 rp, encap, ecmp_load_balance, nh_req);
 
     //ECMP create component NH
@@ -874,6 +876,7 @@ void AgentXmppChannel::AddEvpnRoute(const std::string &vrf_name,
                                                      encap, label,
                                                      vn_list,
                                                      item->entry.security_group_list.security_group,
+                                                     item->entry.tag_group_list.tag_group,
                                                      path_preference,
                                                      (item->entry.next_hops.next_hop.size() > 1),
                                                      EcmpLoadBalance(),
@@ -934,6 +937,7 @@ void AgentXmppChannel::AddEvpnRoute(const std::string &vrf_name,
     }
 
     SecurityGroupList sg_list = item->entry.security_group_list.security_group;
+    TagGroupList tag_list = item->entry.tag_group_list.tag_group;
     VmInterfaceKey intf_key(AgentKey::ADD_DEL_CHANGE, intf_nh->GetIfUuid(), "");
     LocalVmRoute *local_vm_route = NULL;
     VnListType vn_list;
@@ -946,7 +950,7 @@ void AgentXmppChannel::AddEvpnRoute(const std::string &vrf_name,
                              MplsTable::kInvalidLabel,
                              label, false, vn_list,
                              InterfaceNHFlags::BRIDGE,
-                             sg_list, CommunityList(), path_preference,
+                             sg_list, tag_list, CommunityList(), path_preference,
                              Ip4Address(0), ecmp_load_balance, false, false,
                              sequence_number(), item->entry.etree_leaf);
     } else {
@@ -956,7 +960,7 @@ void AgentXmppChannel::AddEvpnRoute(const std::string &vrf_name,
                              VxLanTable::kInvalidvxlan_id,
                              false, vn_list,
                              InterfaceNHFlags::BRIDGE,
-                             sg_list, CommunityList(), path_preference,
+                             sg_list, tag_list, CommunityList(), path_preference,
                              Ip4Address(0), ecmp_load_balance, false, false,
                              sequence_number(), item->entry.etree_leaf);
     }
@@ -1011,6 +1015,7 @@ void AgentXmppChannel::AddRemoteRoute(string vrf_name, IpAddress prefix_addr,
                                agent_->fabric_vrf_name(), agent_->router_id(),
                                vrf_name, addr.to_v4(), encap, label, vn_list,
                                item->entry.security_group_list.security_group,
+                               item->entry.tag_group_list.tag_group,
                                path_preference, false, ecmp_load_balance,
                                false);
         rt_table->AddRemoteVmRouteReq(bgp_peer_id(), vrf_name, prefix_addr,
@@ -1041,6 +1046,7 @@ void AgentXmppChannel::AddRemoteRoute(string vrf_name, IpAddress prefix_addr,
                              false, vn_list,
                              InterfaceNHFlags::INET4,
                              item->entry.security_group_list.security_group,
+                             item->entry.tag_group_list.tag_group,
                              CommunityList(),
                              path_preference,
                              Ip4Address(0),
@@ -1084,6 +1090,7 @@ void AgentXmppChannel::AddRemoteRoute(string vrf_name, IpAddress prefix_addr,
                 new VlanNhRoute(intf_key, vlan_nh->GetVlanTag(),
                                 label, vn_list,
                                 item->entry.security_group_list.security_group,
+                                item->entry.tag_group_list.tag_group,
                                 path_preference, sequence_number());
             rt_table->AddVlanNHRouteReq(bgp_peer, vrf_name, prefix_addr,
                                         prefix_len, data);
@@ -1107,6 +1114,7 @@ void AgentXmppChannel::AddRemoteRoute(string vrf_name, IpAddress prefix_addr,
             ClonedLocalPath *data =
                 new ClonedLocalPath(label, vn_list,
                         item->entry.security_group_list.security_group,
+                        item->entry.tag_group_list.tag_group,
                         sequence_number());
             rt_table->AddClonedLocalPathReq(bgp_peer, vrf_name,
                                             prefix_addr.to_v4(),
@@ -1682,6 +1690,7 @@ void PopulateEcmpHashFieldsToUse(ItemType &item,
 bool AgentXmppChannel::ControllerSendV4V6UnicastRouteCommon(AgentRoute *route,
                                        const VnListType &vn_list,
                                        const SecurityGroupList *sg_list,
+                                       const TagGroupList *tag_list,
                                        const CommunityList *communities,
                                        uint32_t mpls_label,
                                        TunnelType::TypeBmap bmap,
@@ -1730,6 +1739,10 @@ bool AgentXmppChannel::ControllerSendV4V6UnicastRouteCommon(AgentRoute *route,
 
     if (sg_list && sg_list->size()) {
         item.entry.security_group_list.security_group = *sg_list;
+    }
+
+    if (tag_list && tag_list->size()) {
+        item.entry.tag_group_list.tag_group = *tag_list;
     }
 
     if (communities && !communities->empty()) {
@@ -1810,6 +1823,7 @@ bool AgentXmppChannel::BuildTorMulticastMessage(EnetItemType &item,
                                                 const Ip4Address *nh_ip,
                                                 const std::string &vn,
                                                 const SecurityGroupList *sg_list,
+                                                const TagGroupList *tag_list,
                                                 const CommunityList *communities,
                                                 uint32_t label,
                                                 uint32_t tunnel_bmap,
@@ -1884,6 +1898,10 @@ bool AgentXmppChannel::BuildTorMulticastMessage(EnetItemType &item,
         if (sg_list && sg_list->size()) {
             item.entry.security_group_list.security_group = *sg_list;
         }
+
+        if (tag_list && tag_list->size()) {
+            item.entry.tag_group_list.tag_group = *tag_list;
+        }
     }
 
     item.entry.next_hops.next_hop.push_back(nh);
@@ -1900,6 +1918,7 @@ bool AgentXmppChannel::BuildEvpnMulticastMessage(EnetItemType &item,
                                                  const Ip4Address *nh_ip,
                                                  const std::string &vn,
                                                  const SecurityGroupList *sg_list,
+                                                 const TagGroupList *tag_list,
                                                  const CommunityList *communities,
                                                  uint32_t label,
                                                  uint32_t tunnel_bmap,
@@ -1977,6 +1996,10 @@ bool AgentXmppChannel::BuildEvpnMulticastMessage(EnetItemType &item,
         if (sg_list && sg_list->size()) {
             item.entry.security_group_list.security_group = *sg_list;
         }
+
+        if (tag_list && tag_list->size()) {
+            item.entry.tag_group_list.tag_group = *tag_list;
+        }
     }
 
     item.entry.next_hops.next_hop.push_back(nh);
@@ -1992,6 +2015,7 @@ bool AgentXmppChannel::BuildEvpnUnicastMessage(EnetItemType &item,
                                                const Ip4Address *nh_ip,
                                                const std::string &vn,
                                                const SecurityGroupList *sg_list,
+                                               const TagGroupList *tag_list,
                                                const CommunityList *communities,
                                                uint32_t label,
                                                uint32_t tunnel_bmap,
@@ -2054,6 +2078,10 @@ bool AgentXmppChannel::BuildEvpnUnicastMessage(EnetItemType &item,
 
         if (sg_list && sg_list->size()) {
             item.entry.security_group_list.security_group = *sg_list;
+        }
+
+        if (tag_list && tag_list->size()) {
+            item.entry.security_group_list.security_group = *tag_list;
         }
     }
 
@@ -2138,6 +2166,7 @@ bool AgentXmppChannel::ControllerSendEvpnRouteCommon(AgentRoute *route,
                                                      const Ip4Address *nh_ip,
                                                      std::string vn,
                                                      const SecurityGroupList *sg_list,
+                                                     const TagGroupList *tag_list,
                                                      const CommunityList *communities,
                                                      uint32_t label,
                                                      uint32_t tunnel_bmap,
@@ -2158,7 +2187,7 @@ bool AgentXmppChannel::ControllerSendEvpnRouteCommon(AgentRoute *route,
         if (agent_->tsn_enabled()) {
             //Second subscribe for TSN assited replication
             if (BuildEvpnMulticastMessage(item, ss_node, route, nh_ip, vn,
-                                          sg_list, communities,
+                                          sg_list, tag_list, communities,
                                           label, tunnel_bmap, associate,
                                           l2_route->FindPath(agent_->
                                                              local_peer()),
@@ -2168,7 +2197,7 @@ bool AgentXmppChannel::ControllerSendEvpnRouteCommon(AgentRoute *route,
                                        route, associate);
         } else if (agent_->tor_agent_enabled()) {
             if (BuildTorMulticastMessage(item, ss_node, route, nh_ip, vn,
-                                         sg_list, communities, label,
+                                         sg_list, tag_list, communities, label,
                                          tunnel_bmap, destination, source,
                                          associate) == false)
                 return false;;
@@ -2177,7 +2206,7 @@ bool AgentXmppChannel::ControllerSendEvpnRouteCommon(AgentRoute *route,
             const AgentPath *path =
                 l2_route->FindPath(agent_->multicast_peer());
             if (BuildEvpnMulticastMessage(item, ss_node, route, nh_ip, vn,
-                                          sg_list, communities, label,
+                                          sg_list, tag_list, communities, label,
                                           tunnel_bmap, associate,
                                           path,
                                           false) == false)
@@ -2186,8 +2215,8 @@ bool AgentXmppChannel::ControllerSendEvpnRouteCommon(AgentRoute *route,
         }
     } else {
         if (BuildEvpnUnicastMessage(item, ss_node, route, nh_ip, vn, sg_list,
-                                communities, label, tunnel_bmap, path_preference,
-                                associate) == false)
+                                tag_list, communities, label, tunnel_bmap,
+                                path_preference, associate) == false)
             return false;;
             ret = BuildAndSendEvpnDom(item, ss_node, route, associate);
     }
@@ -2299,6 +2328,7 @@ bool AgentXmppChannel::ControllerSendEvpnRouteAdd(AgentXmppChannel *peer,
                                                   uint32_t label,
                                                   uint32_t tunnel_bmap,
                                                   const SecurityGroupList *sg_list,
+                                                  const TagGroupList *tag_list,
                                                   const CommunityList *communities,
                                                   const std::string &destination,
                                                   const std::string &source,
@@ -2313,6 +2343,7 @@ bool AgentXmppChannel::ControllerSendEvpnRouteAdd(AgentXmppChannel *peer,
                                                 nh_ip,
                                                 vn,
                                                 sg_list,
+                                                tag_list,
                                                 communities,
                                                 label,
                                                 tunnel_bmap,
@@ -2340,6 +2371,7 @@ bool AgentXmppChannel::ControllerSendEvpnRouteDelete(AgentXmppChannel *peer,
                                                 vn,
                                                 NULL,
                                                 NULL,
+                                                NULL,
                                                 label,
                                                 tunnel_bmap,
                                                 destination,
@@ -2355,6 +2387,7 @@ bool AgentXmppChannel::ControllerSendRouteAdd(AgentXmppChannel *peer,
                                               uint32_t label,
                                               TunnelType::TypeBmap bmap,
                                               const SecurityGroupList *sg_list,
+                                              const TagGroupList *tag_list,
                                               const CommunityList *communities,
                                               Agent::RouteTableType type,
                                               const PathPreference &path_preference,
@@ -2371,7 +2404,7 @@ bool AgentXmppChannel::ControllerSendRouteAdd(AgentXmppChannel *peer,
     if (((type == Agent::INET4_UNICAST) || (type == Agent::INET6_UNICAST)) &&
          (peer->agent()->simulate_evpn_tor() == false)) {
         ret = peer->ControllerSendV4V6UnicastRouteCommon(route, vn_list,
-                                                   sg_list, communities, label,
+                                                   sg_list, tag_list, communities, label,
                                                    bmap, path_preference, true,
                                                    type, ecmp_load_balance);
     }
@@ -2380,7 +2413,7 @@ bool AgentXmppChannel::ControllerSendRouteAdd(AgentXmppChannel *peer,
         if (vn_list.size())
             vn = *vn_list.begin();
         ret = peer->ControllerSendEvpnRouteCommon(route, nexthop_ip, vn,
-                                                  sg_list, communities, label,
+                                                  sg_list, tag_list, communities, label,
                                                   bmap, "", "",
                                                   path_preference, true);
     }
@@ -2393,6 +2426,7 @@ bool AgentXmppChannel::ControllerSendRouteDelete(AgentXmppChannel *peer,
                                           uint32_t label,
                                           TunnelType::TypeBmap bmap,
                                           const SecurityGroupList *sg_list,
+                                          const TagGroupList *tag_list,
                                           const CommunityList *communities,
                                           Agent::RouteTableType type,
                                           const PathPreference
@@ -2410,7 +2444,7 @@ bool AgentXmppChannel::ControllerSendRouteDelete(AgentXmppChannel *peer,
          (peer->agent()->simulate_evpn_tor() == false)) {
         EcmpLoadBalance ecmp_load_balance;
         ret = peer->ControllerSendV4V6UnicastRouteCommon(route, vn_list,
-                                                       sg_list, communities,
+                                                  sg_list, tag_list, communities,
                                                        label,
                                                        bmap,
                                                        path_preference,
@@ -2424,7 +2458,7 @@ bool AgentXmppChannel::ControllerSendRouteDelete(AgentXmppChannel *peer,
         if (vn_list.size())
             vn = *vn_list.begin();
         ret = peer->ControllerSendEvpnRouteCommon(route, &nh_ip,
-                                                  vn, NULL, NULL,
+                                                  vn, NULL, NULL, NULL,
                                                   label, bmap, "", "",
                                                   path_preference, false);
     }

@@ -394,6 +394,9 @@ static void FillRoutePathExtCommunityInfo(const BgpTable *table,
         } else if (ExtCommunity::is_security_group(*it)) {
             SecurityGroup sg(*it);
             communities->push_back(sg.ToString());
+        } else if (ExtCommunity::is_tag_group(*it)) {
+            TagGroup sg(*it);
+            communities->push_back(tag.ToString());
         } else if (ExtCommunity::is_route_target(*it)) {
             SiteOfOrigin soo(*it);
             communities->push_back(soo.ToString());

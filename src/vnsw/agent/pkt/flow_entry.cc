@@ -94,6 +94,7 @@ const std::map<uint16_t, const char*>
 
 tbb::atomic<int> FlowEntry::alloc_count_;
 SecurityGroupList FlowEntry::default_sg_list_;
+TagGroupList FlowEntry::default_tag_list_;
 
 /////////////////////////////////////////////////////////////////////////////
 // VmFlowRef

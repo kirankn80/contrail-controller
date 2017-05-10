@@ -106,6 +106,7 @@ private:
     bool etree_leaf_;
 
     std::vector<int> security_group_list_;
+    std::vector<int> tag_group_list_;
     std::vector<std::string> community_list_;
     LoadBalance::LoadBalanceAttribute load_balance_attribute_;
 

@@ -235,12 +235,14 @@ bool EcmpTunnelRouteAdd(const BgpPeer *peer, const string &vrf_name,
                         const Ip4Address &vm_ip,
                        uint8_t plen, ComponentNHKeyList &comp_nh_list,
                        bool local_ecmp, const string &vn_name, const SecurityGroupList &sg,
+                       const TagGroupList &tag,
                        const PathPreference &path_preference);
 bool EcmpTunnelRouteAdd(const BgpPeer *peer, const string &vrf_name,
                         const Ip4Address &vm_ip,
                        uint8_t plen, ComponentNHKeyList &comp_nh_list,
                        bool local_ecmp, const string &vn_name,
                        const SecurityGroupList &sg,
+                       const TagGroupList &tag,
                        const PathPreference &path_preference, EcmpLoadBalance& ecmp_load_balnce);
 bool EcmpTunnelRouteAdd(Agent *agent, const BgpPeer *peer, const string &vrf_name,
                         const string &prefix, uint8_t plen,
@@ -257,6 +259,7 @@ bool Inet4TunnelRouteAdd(const BgpPeer *peer, const string &vm_vrf,
                          uint8_t plen, const Ip4Address &server_ip, TunnelType::TypeBmap bmap,
                          uint32_t label, const string &dest_vn_name,
                          const SecurityGroupList &sg,
+                         const TagGroupList &tag,
                          const PathPreference &path_preference);
 bool BridgeTunnelRouteAdd(const BgpPeer *peer, const string &vm_vrf,
                           TunnelType::TypeBmap bmap, const char *server_ip,
@@ -266,6 +269,7 @@ bool Inet4TunnelRouteAdd(const BgpPeer *peer, const string &vm_vrf, char *vm_add
                          uint8_t plen, char *server_ip, TunnelType::TypeBmap bmap,
                          uint32_t label, const string &dest_vn_name,
                          const SecurityGroupList &sg,
+                         const TagGroupList &tag,
                          const PathPreference &path_preference);
 bool TunnelRouteAdd(const char *server, const char *vmip, const char *vm_vrf,
                     int label, const char *vn);

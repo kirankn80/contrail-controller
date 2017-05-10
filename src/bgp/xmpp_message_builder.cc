@@ -513,6 +513,11 @@ void BgpXmppMessage::ProcessExtCommunity(const ExtCommunity *ext_community) {
             if (sg.as_number() != as_number && !sg.IsGlobal())
                 continue;
             security_group_list_.push_back(sg.security_group_id());
+        if (ExtCommunity::is_tag_group(*iter)) {
+            TagGroup sg(*iter);
+            if (tag.as_number() != as_number && !tag.IsGlobal())
+                continue;
+            tag_group_list_.push_back(tag.tag_group_id());
         } else if (ExtCommunity::is_mac_mobility(*iter)) {
             MacMobility mm(*iter);
             mobility_.sequence_number = mm.sequence_number();

@@ -319,8 +319,8 @@ protected:
     template <typename XmppTableT, typename XmppPrefixT>
     void AddXmppPathCommon(IPeer *xmpp_peer, const string &instance,
         const string &prefix_str, const string &nexthop_str,
-        int label, vector<uint32_t> sgid_list, set<string> encap_list,
-        const LoadBalance &lb) {
+        int label, vector<uint32_t> sgid_list, vector<uint32_t> tagid_list,
+        set<string> encap_list, const LoadBalance &lb) {
 
         boost::system::error_code ec;
         XmppPrefixT prefix = XmppPrefixT::FromString(prefix_str, &ec);
@@ -348,6 +348,12 @@ protected:
              it != sgid_list.end(); ++it) {
             SecurityGroup sgid(64512, *it);
             uint64_t value = sgid.GetExtCommunityValue();
+            extcomm_spec.communities.push_back(value);
+        }
+        for (vector<uint32_t>::iterator it = tagid_list.begin();
+             it != tagid_list.end(); ++it) {
+            TagGroup tagid(64512, *it);
+            uint64_t value = tagid.GetExtCommunityValue();
             extcomm_spec.communities.push_back(value);
         }
         for (set<string>::iterator it = encap_list.begin();

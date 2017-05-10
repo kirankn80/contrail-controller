@@ -172,6 +172,7 @@ void intrusive_ptr_add_ref(const BridgeDomainEntry *p);
 
 //class SecurityGroup;
 typedef std::vector<int> SecurityGroupList;
+typedef std::vector<int> TagGroupList;
 typedef std::vector<std::string> CommunityList;
 
 typedef std::set<std::string> VnListType;

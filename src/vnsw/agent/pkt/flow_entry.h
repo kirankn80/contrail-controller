@@ -267,6 +267,8 @@ struct FlowData {
     VnListType dest_vn_list;
     SecurityGroupList source_sg_id_l;
     SecurityGroupList dest_sg_id_l;
+    TagGroupList source_tag_id_l;
+    TagGroupList dest_tag_id_l;
     uint32_t flow_source_vrf;
     uint32_t flow_dest_vrf;
 
@@ -737,6 +739,7 @@ private:
     uint16_t event_log_index_;
     FlowPendingAction pending_actions_;
     static SecurityGroupList default_sg_list_;
+    static TagGroupList default_tag_list_;
     uint8_t flow_retry_attempts_;
     bool is_flow_on_unresolved_list;
     // flow_mgmt_request used for compressing events to flow-mgmt queue.

@@ -730,7 +730,7 @@ TEST_F(AgentXmppUnitTest, resync_db_req_by_deleted_peer_non_hv) {
                               Agent::GetInstance()->fabric_vrf_name(),
                               Agent::GetInstance()->router_id(), "vrf10",
                               addr, TunnelType::ComputeType(TunnelType::MplsType()),
-                              100, vn_list, SecurityGroupList(),
+                              100, vn_list, SecurityGroupList(), TagGroupList(),
                               PathPreference(), false, EcmpLoadBalance(),
                               false);
     DBRequest req(DBRequest::DB_ENTRY_ADD_CHANGE);
@@ -756,9 +756,9 @@ TEST_F(AgentXmppUnitTest, resync_db_req_by_deleted_peer_non_hv) {
     LocalVmRoute *local_vm_route =
         new LocalVmRoute(intf_key, 10, 100, false, vn_list1,
                                    InterfaceNHFlags::INET4,
-                                   SecurityGroupList(),
+                                   SecurityGroupList(), TagGroupList(),
                                    CommunityList(),
-                                   PathPreference(),
+                                   PathPreference(), Ip4Address(0),
                                    EcmpLoadBalance(), false, false, 0, false);
     DBRequest localvm_req(DBRequest::DB_ENTRY_ADD_CHANGE);
     key = new InetUnicastRouteKey(old_bgp_peer, "vrf10", addr, 32);
@@ -774,7 +774,7 @@ TEST_F(AgentXmppUnitTest, resync_db_req_by_deleted_peer_non_hv) {
     // Add vlannhroute with old peer. It should be ignored.
     VlanNhRoute *vlan_rt_data =
         new VlanNhRoute(intf_key, 10, 11, vn_list1, SecurityGroupList(),
-                                  PathPreference(), 0);
+                               TagGroupList(), PathPreference(), 0);
     DBRequest vlanrt_req(DBRequest::DB_ENTRY_ADD_CHANGE);
     key = new InetUnicastRouteKey(old_bgp_peer, "vrf10",
                                    Ip4Address::from_string("2.2.2.0"), 24);
@@ -874,7 +874,7 @@ TEST_F(AgentXmppUnitTest, Add_db_inetinterface_req_by_deleted_peer_non_hv) {
     Inet4TunnelRouteAdd(old_bgp_peer, "vrf10", addr, 32,
                         Ip4Address::from_string("8.8.8.8"),
                         TunnelType::ComputeType(TunnelType::MplsType()),
-                        100, "vn10", SecurityGroupList(), PathPreference());
+                        100, "vn10", SecurityGroupList(), TagGroupLIst(), PathPreference());
     client->WaitForIdle();
     EXPECT_TRUE(rt->GetPathList().size() == 1);
 
@@ -887,15 +887,10 @@ TEST_F(AgentXmppUnitTest, Add_db_inetinterface_req_by_deleted_peer_non_hv) {
     LocalVmRoute *local_vm_route =
         new LocalVmRoute(intf_key, 10, 100, false, vn_list1,
                                    InterfaceNHFlags::INET4,
-                                   SecurityGroupList(),
+                                   SecurityGroupList(), TagGroupList(),
                                    CommunityList(),
-<<<<<<< HEAD
-                                   PathPreference(),
-                                   EcmpLoadBalance(), false, false, 0);
-=======
                                    PathPreference(), Ip4Address(0),
-                                   EcmpLoadBalance(), false, false, false);
->>>>>>> 996b840... * Changes to support mac learning and PBB EVPN
+                                   EcmpLoadBalance(), false, false, 0, false);
     agent->fabric_inet4_unicast_table()->AddLocalVmRouteReq(old_bgp_peer, "vrf1",
                                   addr, 32,
                                   static_cast<LocalVmRoute *>(local_vm_route));
@@ -904,7 +899,7 @@ TEST_F(AgentXmppUnitTest, Add_db_inetinterface_req_by_deleted_peer_non_hv) {
     // Add vlannhroute with old peer. It should be ignored.
     VlanNhRoute *vlan_rt_data =
         new VlanNhRoute(intf_key, 10, 11, vn_list1, SecurityGroupList(),
-                        PathPreference(), 0);
+                        TagGroupList(), PathPreference(), 0);
     agent->fabric_inet4_unicast_table()->AddVlanNHRouteReq(old_bgp_peer,
            "vrf1", Ip4Address::from_string("2.2.2.0"), 24, vlan_rt_data);
     EXPECT_TRUE(RouteGet("vrf1", Ip4Address::from_string("2.2.2.0"), 24) ==

@@ -594,6 +594,7 @@ protected:
                   const string &instance_name,
                   const string &prefix, int localpref,
                   std::vector<uint32_t> sglist = std::vector<uint32_t>(),
+                  std::vector<uint32_t> taglist = std::vector<uint32_t>(),
                   set<string> encap = set<string>(),
                   const SiteOfOrigin &soo = SiteOfOrigin(),
                   string nexthop="",
@@ -622,6 +623,11 @@ protected:
         for (vector<uint32_t>::iterator it = sglist.begin();
             it != sglist.end(); it++) {
             SecurityGroup sgid(0, *it);
+            ext_comm.communities.push_back(sgid.GetExtCommunityValue());
+        }
+        for (vector<uint32_t>::iterator it = taglist.begin();
+            it != taglist.end(); it++) {
+            TagGroup tagid(0, *it);
             ext_comm.communities.push_back(sgid.GetExtCommunityValue());
         }
         for (set<string>::iterator it = encap.begin();

@@ -706,13 +706,15 @@ void VmInterface::UpdateResolveRoute(bool old_ipv4_active, bool force_update,
     if (subnet_.to_ulong() != 0 && vrf_.get() != NULL && vn_.get() != NULL) {
         SecurityGroupList sg_id_list;
         CopySgIdList(&sg_id_list);
-        VmInterfaceKey vm_intf_key(AgentKey::ADD_DEL_CHANGE, GetUuid(), "");
 
+        TagGroupList tag_id_list;
+        CopyTagIdList(&tag_id_list);
+        VmInterfaceKey vm_intf_key(AgentKey::ADD_DEL_CHANGE, GetUuid(), "");
         InetUnicastAgentRouteTable::AddResolveRoute
             (peer_.get(), vrf_->GetName(),
              Address::GetIp4SubnetAddress(subnet_, subnet_plen_), subnet_plen_,
              vm_intf_key, vrf_->table_label(), policy_enabled_, vn_->GetName(),
-             sg_id_list);
+             sg_id_list, tag_id_list);
     }
 }
 
@@ -1012,6 +1014,9 @@ void VmInterface::UpdateL2InterfaceRoute(bool old_bridging, bool force_update,
 
     SecurityGroupList sg_id_list;
     CopySgIdList(&sg_id_list);
+ 
+    TagGroupList tag_id_list;
+    CopyTagIdList(&tag_id_list);
 
     PathPreference path_preference;
     SetPathPreference(&path_preference, false, dependent_ip);
@@ -1033,13 +1038,13 @@ void VmInterface::UpdateL2InterfaceRoute(bool old_bridging, bool force_update,
 
     if (new_ip_addr.is_unspecified() || layer3_forwarding_ == true) {
         table->AddLocalVmRoute(peer_.get(), vrf_->GetName(), mac, this,
-                               new_ip_addr, label, vn_->GetName(), sg_id_list,
+                               new_ip_addr, label, vn_->GetName(), sg_id_list, tag_id_list,
                                path_preference, ethernet_tag_, etree_leaf_);
     }
 
     if (new_ip6_addr.is_unspecified() == false && layer3_forwarding_ == true) {
         table->AddLocalVmRoute(peer_.get(), vrf_->GetName(), mac, this,
-                               new_ip6_addr, label, vn_->GetName(), sg_id_list,
+                               new_ip6_addr, label, vn_->GetName(), sg_id_list, tag_id_list,
                                path_preference, ethernet_tag_, etree_leaf_);
     }
 }
@@ -1809,10 +1814,12 @@ void VmInterface::StaticRoute::Activate(VmInterface *interface,
         if (gw_.is_v4() && addr_.is_v4() && gw_.to_v4() != gw_ip) {
             SecurityGroupList sg_id_list;
             interface->CopySgIdList(&sg_id_list);
+            TagGroupList tag_id_list;
+            interface->CopyTagIdList(&tag_id_list);
             InetUnicastAgentRouteTable::AddGatewayRoute
                 (interface->peer_.get(), vrf_, addr_.to_v4(), plen_,
                  gw_.to_v4(), interface->vn_->GetName(),
-                 interface->vrf_->table_label(), sg_id_list, communities_);
+                 interface->vrf_->table_label(), sg_id_list, tag_id_list, communities_);
         } else {
             IpAddress dependent_ip;
             bool ecmp = false;
@@ -2469,6 +2476,8 @@ void VmInterface::ServiceVlanRouteAdd(const ServiceVlan &entry,
 
     SecurityGroupList sg_id_list;
     CopySgIdList(&sg_id_list);
+    TagGroupList tag_id_list;
+    CopyTagIdList(&tag_id_list);
 
     // With IRB model, add L2 Receive route for SMAC and DMAC to ensure
     // packets from service vm go thru routing
@@ -2488,7 +2497,7 @@ void VmInterface::ServiceVlanRouteAdd(const ServiceVlan &entry,
         InetUnicastAgentRouteTable::AddVlanNHRoute
             (peer_.get(), entry.vrf_->GetName(), entry.addr_,
              Address::kMaxV4PrefixLen, GetUuid(), entry.tag_, entry.label_,
-             vn_list, sg_id_list, path_preference);
+             vn_list, sg_id_list, tag_id_list, path_preference);
         entry.v4_rt_installed_ = true;
     }
     if ((!entry.v6_rt_installed_ && !entry.addr6_.is_unspecified()) ||
@@ -2499,7 +2508,7 @@ void VmInterface::ServiceVlanRouteAdd(const ServiceVlan &entry,
         InetUnicastAgentRouteTable::AddVlanNHRoute
             (peer_.get(), entry.vrf_->GetName(), entry.addr6_,
              Address::kMaxV6PrefixLen, GetUuid(), entry.tag_, entry.label_,
-             vn_list, sg_id_list, path_preference);
+             vn_list, sg_id_list, tag_id_list, path_preference);
         entry.v6_rt_installed_ = true;
     }
 

@@ -55,6 +55,7 @@ using autogen::McastTunnelEncapsulationListType;
 using autogen::ItemType;
 using autogen::NextHopListType;
 using autogen::SecurityGroupListType;
+using autogen::TagGroupListType;
 using autogen::CommunityTagListType;
 using autogen::TunnelEncapsulationListType;
 
@@ -1143,6 +1144,14 @@ bool BgpXmppChannel::ProcessItem(string vrf_name,
                 SecurityGroup sg(bgp_server_->autonomous_system(), *sit);
                 ext.communities.push_back(sg.GetExtCommunityValue());
             }
+            // Process tag group list.
+            const TagGroupListType &itag_list =
+                item.entry.tag_group_list;
+            for (TagGroupListType::const_iterator sit = itag_list.begin();
+                sit != itag_list.end(); ++sit) {
+                TagGroup tag(bgp_server_->autonomous_system(), *sit);
+                ext.communities.push_back(tag.GetExtCommunityValue());
+            }
 
             if (item.entry.mobility.seqno) {
                 MacMobility mm(item.entry.mobility.seqno,
@@ -1419,6 +1428,15 @@ bool BgpXmppChannel::ProcessInet6Item(string vrf_name,
                 sit != isg_list.end(); ++sit) {
                 SecurityGroup sg(bgp_server_->autonomous_system(), *sit);
                 ext.communities.push_back(sg.GetExtCommunityValue());
+            }
+
+            // Process tag group list.
+            const TagGroupListType &itag_list =
+                item.entry.tag_group_list;
+            for (TagGroupListType::const_iterator sit = itag_list.begin();
+                sit != itag_list.end(); ++sit) {
+                TagGroup tag(bgp_server_->autonomous_system(), *sit);
+                ext.communities.push_back(tag.GetExtCommunityValue());
             }
 
             if (item.entry.mobility.seqno) {

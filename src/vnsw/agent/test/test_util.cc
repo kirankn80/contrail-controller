@@ -1550,6 +1550,7 @@ bool BridgeTunnelRouteAdd(const BgpPeer *peer, const string &vm_vrf,
                               Agent::GetInstance()->router_id(),
                               vm_vrf, server_ip,
                               bmap, label, vn_list, SecurityGroupList(),
+                              TagGroupList(),
                               PathPreference(), false, EcmpLoadBalance(),
                               leaf);
     EvpnAgentRouteTable::AddRemoteVmRouteReq(peer, vm_vrf, remote_vm_mac,
@@ -1571,6 +1572,7 @@ bool EcmpTunnelRouteAdd(const BgpPeer *peer, const string &vrf_name,
                         const Ip4Address &vm_ip,
                        uint8_t plen, ComponentNHKeyList &comp_nh_list,
                        bool local_ecmp, const string &vn_name, const SecurityGroupList &sg,
+                       const TagGroupList &tag,
                        const PathPreference &path_preference) {
     COMPOSITETYPE type = Composite::ECMP;
     if (local_ecmp) {
@@ -1585,7 +1587,7 @@ bool EcmpTunnelRouteAdd(const BgpPeer *peer, const string &vrf_name,
     vn_list.insert(vn_name);
     ControllerEcmpRoute *data =
         new ControllerEcmpRoute(peer, vm_ip, plen, vn_list, -1, false, vrf_name,
-                                sg, path_preference, TunnelType::MplsType(),
+                                sg, tag, path_preference, TunnelType::MplsType(),
                                 EcmpLoadBalance(), nh_req);
     InetUnicastAgentRouteTable::AddRemoteVmRouteReq(peer, vrf_name, vm_ip, plen, data);
 }
@@ -1594,6 +1596,7 @@ bool EcmpTunnelRouteAdd(const BgpPeer *peer, const string &vrf_name,
                         const Ip4Address &vm_ip,
                        uint8_t plen, ComponentNHKeyList &comp_nh_list,
                        bool local_ecmp, const string &vn_name, const SecurityGroupList &sg,
+                       const TagGroupList &tag,
                        const PathPreference &path_preference,
                        EcmpLoadBalance &ecmp_load_balance) {
     COMPOSITETYPE type = Composite::ECMP;
@@ -1609,7 +1612,7 @@ bool EcmpTunnelRouteAdd(const BgpPeer *peer, const string &vrf_name,
     vn_list.insert(vn_name);
     ControllerEcmpRoute *data =
         new ControllerEcmpRoute(peer, vm_ip, plen, vn_list, -1, false, vrf_name,
-                                sg, path_preference, TunnelType::MplsType(),
+                                sg, tag, path_preference, TunnelType::MplsType(),
                                 ecmp_load_balance, nh_req);
     InetUnicastAgentRouteTable::AddRemoteVmRouteReq(peer, vrf_name, vm_ip, plen, data);
 }
@@ -1618,6 +1621,7 @@ bool Inet6TunnelRouteAdd(const BgpPeer *peer, const string &vm_vrf, const Ip6Add
                          uint8_t plen, const Ip4Address &server_ip, TunnelType::TypeBmap bmap,
                          uint32_t label, const string &dest_vn_name,
                          const SecurityGroupList &sg,
+                         const TagGroupList &tag,
                          const PathPreference &path_preference) {
     VnListType vn_list;
     vn_list.insert(dest_vn_name);
@@ -1626,7 +1630,7 @@ bool Inet6TunnelRouteAdd(const BgpPeer *peer, const string &vm_vrf, const Ip6Add
                               Agent::GetInstance()->fabric_vrf_name(),
                               Agent::GetInstance()->router_id(),
                               vm_vrf, server_ip,
-                              bmap, label, vn_list, sg,
+                              bmap, label, vn_list, sg, tag,
                               path_preference, false, EcmpLoadBalance(),
                               false);
     InetUnicastAgentRouteTable::AddRemoteVmRouteReq(peer, vm_vrf,
@@ -1658,8 +1662,10 @@ bool EcmpTunnelRouteAdd(Agent *agent, const BgpPeer *peer, const string &vrf,
     comp_nh_list.push_back(nh_data2);
 
     SecurityGroupList sg_id_list;
+    TagGroupList tag_id_list;
     EcmpTunnelRouteAdd(peer, vrf, Ip4Address::from_string(prefix), plen,
-                       comp_nh_list, false, vn, sg_id_list, PathPreference());
+                       comp_nh_list, false, vn, sg_id_list, tag_id_list, 
+                       PathPreference());
     client->WaitForIdle();
 }
 
@@ -1667,6 +1673,7 @@ bool Inet4TunnelRouteAdd(const BgpPeer *peer, const string &vm_vrf, const Ip4Add
                          uint8_t plen, const Ip4Address &server_ip, TunnelType::TypeBmap bmap,
                          uint32_t label, const string &dest_vn_name,
                          const SecurityGroupList &sg,
+                         const TagGroupList &tag,
                          const PathPreference &path_preference) {
     VnListType vn_list;
     vn_list.insert(dest_vn_name);
@@ -1675,7 +1682,7 @@ bool Inet4TunnelRouteAdd(const BgpPeer *peer, const string &vm_vrf, const Ip4Add
                               Agent::GetInstance()->fabric_vrf_name(),
                               Agent::GetInstance()->router_id(),
                               vm_vrf, server_ip,
-                              bmap, label, vn_list, sg,
+                              bmap, label, vn_list, sg, tag,
                               path_preference, false, EcmpLoadBalance(),
                               false);
     InetUnicastAgentRouteTable::AddRemoteVmRouteReq(peer, vm_vrf,
@@ -1687,11 +1694,12 @@ bool Inet4TunnelRouteAdd(const BgpPeer *peer, const string &vm_vrf, char *vm_add
                          uint8_t plen, char *server_ip, TunnelType::TypeBmap bmap,
                          uint32_t label, const string &dest_vn_name,
                          const SecurityGroupList &sg,
+                         const TagGroupList &tag,
                          const PathPreference &path_preference) {
     boost::system::error_code ec;
     Inet4TunnelRouteAdd(peer, vm_vrf, Ip4Address::from_string(vm_addr, ec), plen,
                         Ip4Address::from_string(server_ip, ec), bmap, label,
-                        dest_vn_name, sg, path_preference);
+                        dest_vn_name, sg, tag, path_preference);
 }
 
 bool TunnelRouteAdd(const char *server, const char *vmip, const char *vm_vrf,
@@ -1705,7 +1713,8 @@ bool TunnelRouteAdd(const char *server, const char *vmip, const char *vm_vrf,
                               Agent::GetInstance()->router_id(),
                               vm_vrf, Ip4Address::from_string(server, ec),
                               TunnelType::AllType(), label, vn_list,
-                              SecurityGroupList(), PathPreference(), false,
+                              SecurityGroupList(), TagGroupList(),
+                              PathPreference(), false,
                               EcmpLoadBalance(), false);
     InetUnicastAgentRouteTable::AddRemoteVmRouteReq(bgp_peer_, vm_vrf,
                                         Ip4Address::from_string(vmip, ec),
@@ -1730,7 +1739,8 @@ bool AddArp(const char *ip, const char *mac_str, const char *ifname) {
                               Agent::GetInstance()->fabric_vrf_name(),
                               Ip4Address::from_string(ip, ec), mac,
                               Agent::GetInstance()->fabric_vrf_name(),
-                              *intf, true, 32, false, vn_list, SecurityGroupList());
+                              *intf, true, 32, false, vn_list, SecurityGroupList(),
+                              TagGroupList());
 
     return true;
 }
@@ -1746,7 +1756,8 @@ bool DelArp(const string &ip, const char *mac_str, const string &ifname) {
                               Agent::GetInstance()->fabric_vrf_name(),
                               Ip4Address::from_string(ip, ec),
                               mac, Agent::GetInstance()->fabric_vrf_name(), *intf,
-                              false, 32, false, vn_list, SecurityGroupList());
+                              false, 32, false, vn_list, SecurityGroupList(),
+                              TagGroupList());
     return true;
 }
 

@@ -14,6 +14,7 @@
 /////////////////////////////////////////////////////////////////////////////
 typedef std::vector<boost::uuids::uuid> SgUuidList;
 typedef std::vector<SgEntryRef> SgList;
+typedef std::vector<TagEntryRef> TagList;
 struct VmInterfaceData;
 struct VmInterfaceConfigData;
 struct VmInterfaceNovaData;
@@ -789,7 +790,7 @@ public:
     const TagGroupEntryList &tag_list() const {
         return tag_list_;
     }
-    //void CopyTagIdList(TagGroupList *tag_id_list) const;
+    void CopyTagIdList(TagGroupList *tag_id_list) const;
 
     const VrfAssignRuleList &vrf_assign_rule_list() const {
         return vrf_assign_rule_list_;

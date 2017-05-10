@@ -131,6 +131,7 @@ env.SConscript('routing-instance/SConscript', exports='BuildEnv', duplicate = 0)
 test_suite += env.SConscript('rtarget/SConscript', exports='BuildEnv',
                              duplicate = 0)
 env.SConscript('security_group/SConscript', exports='BuildEnv', duplicate = 0)
+env.SConscript('tag_group/SConscript', exports='BuildEnv', duplicate = 0)
 test_suite += env.SConscript('tunnel_encap/SConscript', exports='BuildEnv',
                              duplicate = 0)
 test_suite += env.SConscript('extended-community/SConscript', exports='BuildEnv',

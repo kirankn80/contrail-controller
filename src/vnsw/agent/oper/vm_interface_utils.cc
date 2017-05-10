@@ -23,6 +23,7 @@
 #include <oper/qos_config.h>
 #include <oper/bridge_domain.h>
 #include <oper/sg.h>
+#include <oper/firewall.h>
 #include <oper/bgp_as_service.h>
 
 #include <filter/acl.h>
@@ -402,6 +403,9 @@ void VmInterface::AddRoute(const std::string &vrf_name, const IpAddress &addr,
     SecurityGroupList sg_id_list;
     CopySgIdList(&sg_id_list);
 
+    TagGroupList tag_id_list;
+    CopyTagIdList(&tag_id_list);
+
     PathPreference path_preference;
     SetPathPreference(&path_preference, ecmp, dependent_rt);
 
@@ -411,7 +415,7 @@ void VmInterface::AddRoute(const std::string &vrf_name, const IpAddress &addr,
     CopyEcmpLoadBalance(ecmp_load_balance);
     InetUnicastAgentRouteTable::AddLocalVmRoute
         (peer_.get(), vrf_name, addr, plen, GetUuid(), vn_list, label,
-         sg_id_list, communities, force_policy, path_preference, service_ip,
+         sg_id_list, tag_id_list, communities, force_policy, path_preference, service_ip,
          ecmp_load_balance, is_local, is_health_check_service);
     return;
 }
@@ -421,11 +425,13 @@ void VmInterface::ResolveRoute(const std::string &vrf_name,
                                const std::string &dest_vn, bool policy) {
     SecurityGroupList sg_id_list;
     CopySgIdList(&sg_id_list);
+    TagGroupList tag_id_list;
+    CopyTagIdList(&tag_id_list);
     VmInterfaceKey vm_intf_key(AgentKey::ADD_DEL_CHANGE, GetUuid(), "");
 
     InetUnicastAgentRouteTable::AddResolveRoute
         (peer_.get(), vrf_name, Address::GetIp4SubnetAddress(addr, plen), plen,
-         vm_intf_key, vrf_->table_label(), policy, dest_vn, sg_id_list);
+         vm_intf_key, vrf_->table_label(), policy, dest_vn, sg_id_list, tag_id_list);
 }
 
 void VmInterface::DeleteRoute(const std::string &vrf_name,
@@ -565,6 +571,18 @@ void VmInterface::CopySgIdList(SecurityGroupList *sg_id_list) const {
         if (it->sg_.get() == NULL)
             continue;
         sg_id_list->push_back(it->sg_->GetSgId());
+    }
+}
+
+// Copy the Tag List for VM Interface. Used to add route for interface
+void VmInterface::CopyTagIdList(TagGroupList *tag_id_list) const {
+    TagGroupEntrySet::const_iterator it;
+    for (it = tag_list_.list_.begin(); it != tag_list_.list_.end(); ++it) {
+        if (it->del_pending_)
+            continue;
+        if (it->tag_.get() == NULL)
+            continue;
+        tag_id_list->push_back(it->tag_->GetTagId());
     }
 }
 

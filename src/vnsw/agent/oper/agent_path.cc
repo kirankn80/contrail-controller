@@ -287,7 +287,7 @@ bool AgentPath::Sync(AgentRoute *sync_route) {
             assert(gw_ip_.is_v4());
             table->AddArpReq(vrf_name_, gw_ip_.to_v4(), vrf_name_,
                              agent->vhost_interface(), false,
-                             dest_vn_list_, sg_list_);
+                             dest_vn_list_, sg_list_, tag_list_);
         } else {
             unresolved = true;
         }
@@ -297,7 +297,7 @@ bool AgentPath::Sync(AgentRoute *sync_route) {
         assert(gw_ip_.is_v4());
         table->AddArpReq(vrf_name_, gw_ip_.to_v4(), nh->interface()->vrf()->GetName(),
                          nh->interface(), nh->PolicyEnabled(), dest_vn_list_,
-                         sg_list_);
+                         sg_list_, tag_list_);
         unresolved = true;
     } else {
         unresolved = false;
@@ -624,6 +624,7 @@ bool LocalVmRoute::AddChangePathExtended(Agent *agent, AgentPath *path,
     bool ret = false;
     NextHop *nh = NULL;
     SecurityGroupList path_sg_list;
+    TagGroupList path_tag_list;
     CommunityList path_communities;
 
     //TODO Based on key table type pick up interface
@@ -689,6 +690,12 @@ bool LocalVmRoute::AddChangePathExtended(Agent *agent, AgentPath *path,
     path_sg_list = path->sg_list();
     if (path_sg_list != sg_list_) {
         path->set_sg_list(sg_list_);
+        ret = true;
+    }
+
+    path_tag_list = path->tag_list();
+    if (path_tag_list != tag_list_) {
+        path->set_tag_list(tag_list_);
         ret = true;
     }
 
@@ -778,6 +785,7 @@ bool PBBRoute::AddChangePathExtended(Agent *agent, AgentPath *path,
     bool ret = false;
     NextHop *nh = NULL;
     SecurityGroupList path_sg_list;
+    TagGroupList path_tag_list;
     CommunityList path_communities;
 
     VrfEntry *vrf = static_cast<VrfEntry *>
@@ -806,6 +814,14 @@ bool PBBRoute::AddChangePathExtended(Agent *agent, AgentPath *path,
         ret = true;
     }
 
+    path_tag_list = path->tag_list();
+    if (path_tag_list != tag_list_) {
+        path->set_tag_list(tag_list_);
+        ret = true;
+    }
+
+    //Copy over entire path preference structure, whenever there is a
+
     if (path->ChangeNH(agent, nh) == true) {
         ret = true;
     }
@@ -819,6 +835,7 @@ bool VlanNhRoute::AddChangePathExtended(Agent *agent, AgentPath *path,
     bool ret = false;
     NextHop *nh = NULL;
     SecurityGroupList path_sg_list;
+    TagGroupList path_tag_list;
 
     assert(intf_.type_ == Interface::VM_INTERFACE);
     VlanNHKey key(intf_.uuid_, tag_);
@@ -843,6 +860,14 @@ bool VlanNhRoute::AddChangePathExtended(Agent *agent, AgentPath *path,
         path->set_sg_list(sg_list_);
         ret = true;
     }
+
+    path_tag_list = path->tag_list();
+    if (path_tag_list != tag_list_) {
+        path->set_tag_list(tag_list_);
+        ret = true;
+    }
+
+    //Copy over entire path preference structure, whenever there is a
 
     //Copy over entire path preference structure, whenever there is a
     //transition from active-active to active-backup struture
