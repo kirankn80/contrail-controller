@@ -925,7 +925,8 @@ private:
     void UpdateFlowKeyNextHop();
 
     bool CopyConfig(const InterfaceTable *table,
-                    const VmInterfaceConfigData *data, bool *sg_changed,
+                    const VmInterfaceConfigData *data, 
+                    bool *sg_changed, bool *tag_changed,
                     bool *ecmp_changed, bool *local_pref_changed,
                     bool *ecmp_load_balance_changed,
                     bool *static_route_config_changed,
@@ -1034,6 +1035,8 @@ private:
 
     void UpdateSecurityGroup();
     void DeleteSecurityGroup();
+    void UpdateTagGroup();
+    void DeleteTagGroup();
     void UpdateFatFlow();
     void DeleteFatFlow();
     void UpdateBridgeDomain();

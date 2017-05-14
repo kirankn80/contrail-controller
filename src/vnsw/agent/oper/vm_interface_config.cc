@@ -644,7 +644,7 @@ static void BuildTagList(VmInterfaceConfigData *data, IFMapNode *node) {
     Tag *tag_cfg = static_cast<Tag *>(node->GetObject());
     assert(tag_cfg);
     autogen::IdPermsType id_perms = tag_cfg->id_perms();
-    uint32_t tag_id = TagTable::kInvalidTagId;
+    uint32_t tag_id = tag_cfg->id();
     if (tag_id != TagTable::kInvalidTagId) {
         uuid tag_uuid = nil_uuid();
         CfgUuidSet(id_perms.uuid.uuid_mslong, id_perms.uuid.uuid_lslong,

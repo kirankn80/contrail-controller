@@ -136,6 +136,7 @@ bool VmInterfaceConfigData::OnResync(const InterfaceTable *table,
                                      VmInterface *vmi,
                                      bool *force_update) const {
     bool sg_changed = false;
+    bool tag_changed = false;
     bool ecmp_changed = false;
     bool local_pref_changed = false;
     bool ecmp_load_balance_changed = false;
@@ -143,11 +144,11 @@ bool VmInterfaceConfigData::OnResync(const InterfaceTable *table,
     bool etree_leaf_mode_changed = false;
     bool ret = false;
 
-    ret = vmi->CopyConfig(table, this, &sg_changed, &ecmp_changed,
+    ret = vmi->CopyConfig(table, this, &sg_changed, &tag_changed, &ecmp_changed,
                           &local_pref_changed, &ecmp_load_balance_changed,
                           &static_route_config_changed,
                           &etree_leaf_mode_changed);
-    if (sg_changed || ecmp_changed || local_pref_changed ||
+    if (sg_changed || tag_changed || ecmp_changed || local_pref_changed ||
         ecmp_load_balance_changed || static_route_config_changed
         || etree_leaf_mode_changed)
         *force_update = true;
@@ -177,6 +178,7 @@ bool VmInterface::CopyIp6Address(const Ip6Address &addr) {
 bool VmInterface::CopyConfig(const InterfaceTable *table,
                              const VmInterfaceConfigData *data,
                              bool *sg_changed,
+                             bool *tag_changed,
                              bool *ecmp_changed,
                              bool *local_pref_changed,
                              bool *ecmp_load_balance_changed,
@@ -465,6 +467,17 @@ bool VmInterface::CopyConfig(const InterfaceTable *table,
 	    (sg_list_, old_sg_list.begin(), old_sg_list.end(),
 	     new_sg_list.begin(), new_sg_list.end());
     if (*sg_changed) {
+        ret = true;
+    }
+
+    // Audit operational and config Tag list
+    TagGroupEntrySet &old_tag_list = tag_list_.list_;
+    const TagGroupEntrySet &new_tag_list = data->tag_list_.list_;
+    *tag_changed =
+	    AuditList<TagGroupEntryList, TagGroupEntrySet::iterator>
+	    (tag_list_, old_tag_list.begin(), old_tag_list.end(),
+	     new_tag_list.begin(), new_tag_list.end());
+    if (*tag_changed) {
         ret = true;
     }
 

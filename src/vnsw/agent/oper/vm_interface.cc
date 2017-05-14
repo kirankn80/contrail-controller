@@ -294,10 +294,12 @@ void VmInterface::ApplyConfig(bool old_ipv4_active, bool old_l2_active,
     //Security Group update
     if (IsActive()) {
         UpdateSecurityGroup();
+        UpdateTagGroup();
         UpdateFatFlow();
         UpdateBridgeDomain();
     } else {
         DeleteSecurityGroup();
+        DeleteTagGroup();
         DeleteFatFlow();
         DeleteBridgeDomain();
     }
@@ -2332,6 +2334,28 @@ void VmInterface::TagGroupEntryList::Update
 void VmInterface::TagGroupEntryList::Remove
         (TagGroupEntrySet::iterator &it) {
     it->set_del_pending(true);
+}
+
+void VmInterface::UpdateTagGroup() {
+    TagGroupEntrySet::iterator it = tag_list_.list_.begin();
+    while (it != tag_list_.list_.end()) {
+        TagGroupEntrySet::iterator prev = it++;
+        if (prev->del_pending_) {
+            tag_list_.list_.erase(prev);
+        } else {
+            prev->Activate(this);
+        }
+    }
+}
+
+void VmInterface::DeleteTagGroup() {
+    TagGroupEntrySet::iterator it = tag_list_.list_.begin();
+    while (it != tag_list_.list_.end()) {
+        TagGroupEntrySet::iterator prev = it++;
+        if (prev->del_pending_) {
+            tag_list_.list_.erase(prev);
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
